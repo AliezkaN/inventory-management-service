@@ -5,26 +5,22 @@ spring:
   application:
     name: inventory-management-service
   datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: username
-    password: 1
+    url: ${DB_URL}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     hikari:
       connection-init-sql: select 1
       connection-test-query: select 1
       pool-name: inventory-management-service-pool
-  h2:
-    console:
-      enabled: true
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.H2Dialect
-    defer-datasource-initialization: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 app:
   security:
@@ -35,10 +31,13 @@ app:
     auth:
       white-list:
         - "/error"
-        - "/auth/register"
+        - "/auth/**"
         - "/h2-console/**"
 
+remote:
+  prediction-service:
+    url: http://localhost:5000/retail-flow-prediction-manager/predict
 
 logging:
   level:
-    org.springframework.security: TRACE
+    org.springframework.security: INFO

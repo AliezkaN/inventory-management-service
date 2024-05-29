@@ -1,28 +1,38 @@
 package com.nahorniak.inventorymanagementservice.mappers;
 
-import com.nahorniak.inventorymanagementservice.domain.Role;
-import com.nahorniak.inventorymanagementservice.domain.Shop;
-import com.nahorniak.inventorymanagementservice.domain.User;
-import com.nahorniak.inventorymanagementservice.dto.response.UserDto;
-import com.nahorniak.inventorymanagementservice.persistance.RoleEntity;
-import com.nahorniak.inventorymanagementservice.persistance.ShopEntity;
-import com.nahorniak.inventorymanagementservice.persistance.UserEntity;
-import fr.xebia.extras.selma.IgnoreMissing;
-import fr.xebia.extras.selma.IoC;
-import fr.xebia.extras.selma.Mapper;
-import fr.xebia.extras.selma.Maps;
+import com.nahorniak.inventorymanagementservice.dto.response.*;
+import com.nahorniak.inventorymanagementservice.persistance.*;
+import fr.xebia.extras.selma.*;
 
 @Mapper(withIoC = IoC.SPRING)
 public interface SelmaMapper {
 
     // Entity to Domain
-    Shop toDomain(ShopEntity entity);
-    User toDomain(UserEntity entity);
     @Maps(withIgnoreMissing = IgnoreMissing.DESTINATION)
-    Role toDomain(RoleEntity entity);
-    // Entity to Domain
+    ShopDto toDto(ShopEntity entity);
 
+    @Maps(withIgnoreMissing = IgnoreMissing.DESTINATION,
+            withCustomFields = {@Field({"role.name", "role"})})
+    UserDto toDto(UserEntity entity);
 
-    // Domain to DTO
-    UserDto toDto(User domain);
+    @Maps(withIgnoreMissing = IgnoreMissing.DESTINATION)
+    Role toDto(RoleEntity entity);
+
+    @Maps(withIgnoreMissing = IgnoreMissing.DESTINATION)
+    OrderDto toDto(OrderEntity entity);
+
+    @Maps(withIgnoreMissing = IgnoreMissing.DESTINATION,
+            withCustomFields = {
+                    @Field({"order.id", "orderId"}),
+                    @Field({"product.id", "productId"}),
+                    @Field({"product.name", "productName"})
+            })
+    OrderProducts toDto(OrderProductsEntity entity);
+
+    @Maps(withIgnoreMissing = IgnoreMissing.DESTINATION,
+            withCustomFields = {
+                    @Field({"stock.quantity", "quantity"}),
+                    @Field({"shop.id", "shopId"})
+            })
+    ProductDto toDto(ProductEntity entity);
 }

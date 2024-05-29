@@ -43,6 +43,13 @@
         </dependency>
         <!-- Starters -->
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+<!--            <optional>true</optional>-->
+        </dependency>
+
+
         <!-- Hikari connection pool -->
         <dependency>
             <groupId>com.zaxxer</groupId>
@@ -54,7 +61,12 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>runtime</scope>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
         </dependency>
 
         <!-- Code generation -->
@@ -93,6 +105,15 @@
             <version>${jwt.version}</version>
         </dependency>
         <!-- JWT -->
+
+        <!-- utils -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.12.0</version>
+        </dependency>
+        <!-- utils -->
+
     </dependencies>
 
     <build>

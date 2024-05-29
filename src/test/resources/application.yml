@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: inventory-management-service
+  datasource:
+    url: jdbc:h2:mem:mydb
+    driver-class-name: org.h2.Driver
+    username: username
+    password: password
+    hikari:
+      connection-init-sql: select 1
+      connection-test-query: select 1
+      pool-name: inventory-management-service-test-pool
+
+  jpa:
+    hibernate:
+      ddl-auto: none

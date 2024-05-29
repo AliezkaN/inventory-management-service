@@ -6,7 +6,11 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -20,17 +24,28 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class JwtService {
 
-    private final SecurityProperties.Jwt jwtProperties;
+    private SecurityProperties.Jwt jwtProperties;
+
+    @Autowired
+    public JwtService(@NonNull SecurityProperties securityProperties) {
+        jwtProperties = securityProperties.getJwt();
+    }
 
     public String generateToken(UserDetails userDetails) {
         return generateToken(Collections.emptyMap(), userDetails, jwtProperties.getExpiration());
     }
 
-    public String generateRefreshToken(UserDetails userDetails) {
-        return generateToken(Collections.emptyMap(), userDetails, jwtProperties.getRefreshExpiration());
+    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        return generateToken(extraClaims, userDetails, jwtProperties.getExpiration());
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails, long expiration) {
+
+        var authorities = userDetails.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
         return Jwts
                 .builder()
                 .setClaims(extraClaims)
@@ -38,6 +53,7 @@ public class JwtService {
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .claim("authorities", authorities)
                 .compact();
 
     }
@@ -69,7 +85,7 @@ public class JwtService {
                 .parserBuilder()
                 .setSigningKey(getSignInKey())
                 .build()
-                .parseClaimsJwt(token)
+                .parseClaimsJws(token)
                 .getBody();
     }
 

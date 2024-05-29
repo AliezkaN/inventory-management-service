@@ -2,22 +2,33 @@ package com.nahorniak.inventorymanagementservice.persistance;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "stocks")
 public class StockEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "shop_id")
-    private Long shopId;
-    @Column(name = "product_id")
-    private Long productId;
+
+    @OneToOne
+    @JoinColumn(name = "product_id", referencedColumnName = "id")
+    private ProductEntity product;
+
     @Column(name = "quantity")
-    private Integer quantity;
-    @Column(name = "last_updated")
-    private LocalDateTime lastUpdated;
+    private Integer quantity = 0;
+
+    public void addToQuantity(Integer quantity) {
+        this.setQuantity(getQuantity() + quantity);
+    }
+
+    public void extractFromQuantity(Integer quantity) {
+        this.setQuantity(getQuantity() - quantity);
+    }
 }

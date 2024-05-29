@@ -1,65 +1,41 @@
 package com.nahorniak.inventorymanagementservice.service;
 
-import com.nahorniak.inventorymanagementservice.domain.Shop;
 import com.nahorniak.inventorymanagementservice.dto.request.ShopRequest;
+import com.nahorniak.inventorymanagementservice.dto.response.ShopDto;
 import com.nahorniak.inventorymanagementservice.exception.ResourceNotFoundException;
 import com.nahorniak.inventorymanagementservice.mappers.SelmaMapper;
 import com.nahorniak.inventorymanagementservice.persistance.ShopEntity;
+import com.nahorniak.inventorymanagementservice.persistance.UserEntity;
 import com.nahorniak.inventorymanagementservice.repository.ShopRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.lang.NonNull;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class ShopService {
 
     private final ShopRepository shopRepository;
+
     private final SelmaMapper selmaMapper;
 
-    public List<Shop> getAll() {
-        return shopRepository.findAll()
-                .stream()
-                .map(selmaMapper::toDomain)
-                .toList();
+    public ShopDto getShopByConnectedUser(Authentication connectedUser) {
+        UserEntity user = (UserEntity) connectedUser.getPrincipal();
+        return shopRepository.findByManagerId(user.getId())
+                .map(selmaMapper::toDto)
+                .orElseThrow(() -> new ResourceNotFoundException("Shop by connected user with id {" + user.getId() + "} not found!"));
     }
 
-    public Shop getById(@NonNull Long id) {
-        return shopRepository.findById(id)
-                .map(selmaMapper::toDomain)
-                .orElseThrow(() -> new ResourceNotFoundException("Shop with id " + id + " not found!"));
-    }
-
-    public Shop create(ShopRequest request) {
-        ShopEntity shopEntity = new ShopEntity()
-                .setAddress(request.getAddress())
-                .setContactNumber(request.getContactNumber())
-                .setDescription(request.getDescription());
+    public ShopDto update(ShopRequest request, Authentication connectedUser) {
+        UserEntity user = (UserEntity) connectedUser.getPrincipal();
+        ShopEntity shopEntity = shopRepository.findByManagerId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Shop by connected user with id {" + user.getId() + "} not found!"));
+        Optional.ofNullable(request.getAddress()).ifPresent(shopEntity::setAddress);
+        Optional.ofNullable(request.getContactNumber()).ifPresent(shopEntity::setContactNumber);
+        Optional.ofNullable(request.getDescription()).ifPresent(shopEntity::setDescription);
         ShopEntity storedEntity = shopRepository.save(shopEntity);
-        return selmaMapper.toDomain(storedEntity);
-    }
-
-    public Shop update(Long id, ShopRequest request) {
-        ShopEntity shopEntity = shopRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Shop with id " + id + " not found!"));
-        if (request.getAddress() != null) {
-            shopEntity.setAddress(request.getAddress());
-        }
-        if (request.getContactNumber() != null) {
-            shopEntity.setContactNumber(request.getContactNumber());
-        }
-        if (request.getDescription() != null) {
-            shopEntity.setDescription(request.getDescription());
-        }
-        ShopEntity storedEntity = shopRepository.save(shopEntity);
-        return selmaMapper.toDomain(storedEntity);
-    }
-
-    public void delete(Long id) {
-        ShopEntity shopEntity = shopRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Shop with id " + id + " not found!"));
-        shopRepository.delete(shopEntity);
+        return selmaMapper.toDto(storedEntity);
     }
 }
