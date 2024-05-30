@@ -21,12 +21,7 @@ public class OrderEntity {
     private ShopEntity shop;
     private LocalDateTime orderDate;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "orders_order_products",
-            joinColumns = @JoinColumn(name = "order_id"),
-            inverseJoinColumns = @JoinColumn(name = "order_product_id")
-    )
+    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<OrderProductsEntity> orderProducts;
     private BigDecimal totalAmount;
 }
